@@ -102,7 +102,7 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_JMX_PORT: 9101
       KAFKA_JMX_HOSTNAME: broker-1
-      # KAFKA_CONFLUENT_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      KAFKA_CONFLUENT_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker-1:9191,broker-2:9192,broker-3:9193
       CONFLUENT_METRICS_REPORTER_SECURITY_PROTOCOL: SSL
       CONFLUENT_METRICS_REPORTER_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/kafka.broker-1.keystore.jks
@@ -160,7 +160,7 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_JMX_PORT: 9102
       KAFKA_JMX_HOSTNAME: broker-2
-      # KAFKA_CONFLUENT_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      KAFKA_CONFLUENT_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker-1:9191,broker-2:9192,broker-3:9193
       CONFLUENT_METRICS_REPORTER_SECURITY_PROTOCOL: SSL
       CONFLUENT_METRICS_REPORTER_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/kafka.broker-2.keystore.jks
@@ -218,7 +218,7 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_JMX_PORT: 9103
       KAFKA_JMX_HOSTNAME: broker-3
-      # KAFKA_CONFLUENT_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      KAFKA_CONFLUENT_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker-1:9191,broker-2:9192,broker-3:9193
       CONFLUENT_METRICS_REPORTER_SECURITY_PROTOCOL: SSL
       CONFLUENT_METRICS_REPORTER_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/kafka.broker-3.keystore.jks
@@ -260,7 +260,7 @@ services:
       - "8081:8081"
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
-      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker-1:9191,broker-2:9192,broker-3:9193'
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker-1:9091,broker-2:9092,broker-3:9093'
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
 
   control-center:
@@ -290,3 +290,41 @@ services:
       CONTROL_CENTER_STREAMS_SSL_KEYSTORE_PASSWORD: password
       CONTROL_CENTER_STREAMS_SSL_KEY_PASSWORD: password
       PORT: 9021
+
+  producer:
+    build: ./src
+    hostname: producer
+    container_name: producer
+    volumes:
+      - "./secrets/ca.crt:/secrets/ca.crt:ro"
+      - "./secrets/producer:/secrets/producer:ro"
+    depends_on:
+      - zookeeper-1
+      - zookeeper-2
+      - zookeeper-3
+      - broker-1
+      - broker-2
+      - broker-3
+    environment:
+      NODE_TLS_REJECT_UNAUTHORIZED: "0"
+    command: "producer.js"
+
+  consumer:
+    build: ./src
+    hostname: consumer
+    container_name: consumer
+    volumes:
+      - "./secrets/ca.crt:/secrets/ca.crt:ro"
+      - "./secrets/consumer:/secrets/consumer:ro"
+    depends_on:
+      - zookeeper-1
+      - zookeeper-2
+      - zookeeper-3
+      - broker-1
+      - broker-2
+      - broker-3
+      - producer
+    environment:
+      NODE_TLS_REJECT_UNAUTHORIZED: "0"
+    command: "consumer.js"
+

@@ -15,12 +15,11 @@ openssl req -new -x509 -keyout ca.key -out ca.crt -days 36500 -subj '/CN=ca.loca
 
 
 
-# for i in broker-1 broker-2 broker-3 zookeeper-1 zookeeper-2 zookeeper-3
-# for i in control-center
-for i in consumer producer
+for i in broker-1 broker-2 broker-3 zookeeper-1 zookeeper-2 zookeeper-3 control-center consumer producer
 do
 	echo $i
     mkdir $i
+    cd $i
 	# Create keystores
 	keytool -genkey -noprompt \
 				 -alias $i \
@@ -33,16 +32,18 @@ do
 	# Create CSR, sign the key and import back into keystore
 	keytool -keystore kafka.$i.keystore.jks -alias $i -certreq -file $i.csr -storepass password -keypass password
 
-	openssl x509 -req -CA ca.crt -CAkey ca.key -in $i.csr -out $i-signed.crt -days 9999 -CAcreateserial -passin pass:password
+	openssl x509 -req -CA ../ca.crt -CAkey ../ca.key -in $i.csr -out $i-signed.crt -days 9999 -CAcreateserial -passin pass:password
 
-	keytool -keystore kafka.$i.keystore.jks -alias CARoot -import -file ca.crt -storepass password -keypass password
+	keytool -keystore kafka.$i.keystore.jks -alias CARoot -import -file ../ca.crt -storepass password -keypass password
 
 	keytool -keystore kafka.$i.keystore.jks -alias $i -import -file $i-signed.crt -storepass password -keypass password
 
 	# Create truststore and import the CA cert.
-	keytool -keystore kafka.$i.truststore.jks -alias CARoot -import -file ca.crt -storepass password -keypass password
+	keytool -keystore kafka.$i.truststore.jks -alias CARoot -import -file ../ca.crt -storepass password -keypass password
 
   echo "password" > ${i}_sslkey_creds
   echo "password" > ${i}_keystore_creds
   echo "password" > ${i}_truststore_creds
+
+  cd ..
 done
