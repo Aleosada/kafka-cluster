@@ -9,15 +9,15 @@ const kafka = new Kafka({
   clientId: 'customer-producer',
   brokers: ['broker-1:9191', 'broker-2:9192', 'broker-3:9193'],
   // ssl: true,
-  // sasl: {
-  //   mechanism: 'plain',
-  //   username: 'producer',
-  //   password: 'producer-secret'
-  // }
+  sasl: {
+    mechanism: 'plain',
+    username: 'producer',
+    password: 'producer-secret'
+  },
   ssl: {
     ca: [fs.readFileSync(ca_cert, 'utf-8')],
-    cert: fs.readFileSync('../secrets/producer/producer-signed.pem', 'utf-8'),
-    key: fs.readFileSync('../secrets/producer/producer-key.pem', 'utf-8'),
+    // cert: fs.readFileSync('../secrets/producer/producer-signed.pem', 'utf-8'),
+    // key: fs.readFileSync('../secrets/producer/producer-key.pem', 'utf-8'),
   }
 });
 
