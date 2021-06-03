@@ -6,7 +6,7 @@ const { Kafka } = require('kafkajs');
 const ca_cert = path.join(__dirname, '../secrets/ca.crt');
 
 const kafka = new Kafka({
-  clientId: 'customer-consumer',
+  clientId: 'custromer-consumer',
   brokers: ['broker-1:9191', 'broker-2:9192', 'broker-3:9193'],
   // ssl: true,
   sasl: {
